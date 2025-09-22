@@ -4,10 +4,6 @@
 #include <cstdlib>
 #include <ctime>
 
-// Forward declaration of Board and Player classes
-class Board;
-class Player;
-
 
 // --- Board Class ---
 // Manages the game board state and validates moves.
