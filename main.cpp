@@ -97,20 +97,6 @@ public:
     }
 };
 
-// --- HumanPlayer Class ---
-// Handles human player input.
-class HumanPlayer : public Player {
-public:
-    HumanPlayer(const std::string& name, char symbol) : Player(name, symbol) {
-        // TODO: Implement HumanPlayer constructor
-    }
-
-    void getMove(int& row, int& col) override {
-        // TODO: Implement human player move input
-    }
-};
-
-
 // --- AIPlayer Class ---
 // Implements the computer opponent.
 class AIPlayer : public Player {
