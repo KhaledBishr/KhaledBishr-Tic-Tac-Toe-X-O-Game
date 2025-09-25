@@ -78,10 +78,11 @@ protected:
 
 public:
     // Constructor for the Player class.
-    Player(const std::string& name, char symbol)
-    {
+    Player(const std::string& name, char symbol) : name(name),
+        symbol(symbol) {}
+    
         // TODO: Implement Player constructor
-    }
+    
 
     // Pure virtual function to get a move. To be implemented by derived classes.
     virtual void getMove(int& row, int& col) = 0;
@@ -89,21 +90,21 @@ public:
     // Returns the player's name.
     std::string getName() const
     {
-        // TODO: Implement getName logic
+        
         return name;
     }
 
     // Returns the player's symbol.
     char getSymbol() const
     {
-        // TODO: Implement getSymbol logic
+        
         return symbol;
     }
 
     // Sets a new name for the player.
     void setName(const std::string& newName)
     {
-        // TODO: Implement setName logic
+        name = newName;
     }
 };
 
@@ -154,6 +155,31 @@ public:
     // Finds the optimal move using the Minimax algorithm.
     void getBestMove(Board& board, int& row, int& col) const
     {
+        int bestScore = -1000;
+        row = -1;
+        col = -1;
+        for(int i =0; i < 3 ; i++){
+            for(int j = 0 ; j < 3 ; j ++){
+                if (board.isValidMove(i,j)){
+                    Board test = board;
+                   // int score = minimax(board,0,false);
+                    test.makeMove(i,j,this->symbol);
+                    int score = minimax(test,0,false);
+                    if (score > bestScore){
+                        bestScore = score;
+                        row = i;
+                        col = j;
+
+                    }
+                }
+
+
+            }
+
+
+        }
+        row = row;
+        col = col;
         // TODO: Implement Minimax algorithm to find the best move
     }
 
@@ -161,6 +187,8 @@ public:
     int evaluateBoard(const Board& board) const
     {
         // TODO: Implement evaluation function
+        if (board.checkWin(symbol)) return +10;
+        if (board.checkWin((symbol == 'X' ) ? 'O' : 'X' )) return -10;
         return 0;
     }
 
