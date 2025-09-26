@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
+#include <bits/locale_facets_nonio.h>
 
 
 // --- Board Class ---
@@ -43,22 +44,69 @@ public:
     // Checks all win conditions (rows, columns, diagonals) for a given symbol.
     bool checkWin(char symbol) const
     {
-        // TODO: Implement win condition check
+        for (int i = 0; i < size; i++)
+        {
+            bool roWin = true;
+            bool colWin = true;
+            for (int j = 0; j < size; j++)
+            {
+                if (grid[i][j] != symbol)
+                    roWin = false;
+                if (grid[j][i] != symbol)
+                    colWin = false;
+            }
+            if (roWin || colWin)
+                return true;
+        }
+        bool diagonalWin = true;
+        for (int i = 0; i < size; i++)
+        {
+            if (grid[i][size - 1 - i] != symbol)
+            {
+                diagonalWin = false;
+                break;
+            }
+        }
+        if (diagonalWin)
+            return true;
+
+        bool antiDiagonalWin = true;
+        for (int i = 0; i < size; i++)
+        {
+            if (grid[i][size - 1 - i] != symbol)
+            {
+                antiDiagonalWin = false;
+                break;
+            }
+        }
+        if (antiDiagonalWin)
+            return true;
+
         return false;
     }
 
     // Checks if all cells are occupied.
     bool isFull() const
     {
-        // TODO: Implement full board check
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                if (grid[i][j] == ' ')
+                    return false;
+            }
+        }
         return false;
     }
 
     // Returns the character at the specified coordinates.
     char getCell(int row, int col) const
     {
-        // TODO: Implement get cell content logic
-        return ' ';
+        // Check if the coordinates are within the valid range of the grid.
+        if (row >= 0 && row < size && col >= 0 && col < size)
+            return grid[row][col];
+
+        return '';
     }
 
     // Clears all cells to an empty state for a new game.
@@ -79,10 +127,12 @@ protected:
 public:
     // Constructor for the Player class.
     Player(const std::string& name, char symbol) : name(name),
-        symbol(symbol) {}
-    
-        // TODO: Implement Player constructor
-    
+                                                   symbol(symbol)
+    {
+    }
+
+    // TODO: Implement Player constructor
+
 
     // Pure virtual function to get a move. To be implemented by derived classes.
     virtual void getMove(int& row, int& col) = 0;
@@ -90,14 +140,12 @@ public:
     // Returns the player's name.
     std::string getName() const
     {
-        
         return name;
     }
 
     // Returns the player's symbol.
     char getSymbol() const
     {
-        
         return symbol;
     }
 
@@ -158,25 +206,24 @@ public:
         int bestScore = -1000;
         row = -1;
         col = -1;
-        for(int i =0; i < 3 ; i++){
-            for(int j = 0 ; j < 3 ; j ++){
-                if (board.isValidMove(i,j)){
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                if (board.isValidMove(i, j))
+                {
                     Board test = board;
-                   // int score = minimax(board,0,false);
-                    test.makeMove(i,j,this->symbol);
-                    int score = minimax(test,0,false);
-                    if (score > bestScore){
+                    // int score = minimax(board,0,false);
+                    test.makeMove(i, j, this->symbol);
+                    int score = minimax(test, 0, false);
+                    if (score > bestScore)
+                    {
                         bestScore = score;
                         row = i;
                         col = j;
-
                     }
                 }
-
-
             }
-
-
         }
         row = row;
         col = col;
@@ -188,7 +235,7 @@ public:
     {
         // TODO: Implement evaluation function
         if (board.checkWin(symbol)) return +10;
-        if (board.checkWin((symbol == 'X' ) ? 'O' : 'X' )) return -10;
+        if (board.checkWin((symbol == 'X') ? 'O' : 'X')) return -10;
         return 0;
     }
 
