@@ -295,7 +295,7 @@ public:
     // Sets the AI difficulty.
     void setDifficulty(Difficulty newDifficulty)
     {
-        // TODO: Implement setDifficulty logic
+        difficulty = newDifficulty;
     }
 };
 
@@ -308,6 +308,8 @@ private:
     Player *player1;
     Player *player2;
     Player *currentPlayer;
+    bool gameOver = false;
+    Player *winner = nullptr;
 
 public:
     // Constructor for the Game class.
@@ -325,7 +327,11 @@ public:
     // Displays the game mode selection menu.
     void showMenu()
     {
-        // TODO: Implement menu display
+        std::cout << "===== Tic Tac Toe =====\n";
+        std::cout << "1. Player vs Player\n";
+        std::cout << "2. Player vs Computer (Easy)\n";
+        std::cout << "3. Player vs Computer (Hard)\n";
+        std::cout << "Select mode: ";
     }
 
     // Sets up Player vs Player mode.
@@ -361,20 +367,41 @@ public:
     // Checks for a win or draw condition.
     bool checkGameEnd()
     {
-        // TODO: Implement game end check
+        if (board.checkWin(currentPlayer->getSymbol()))
+        {
+            gameOver = true;
+            winner = currentPlayer;
+            return true;
+        }
+        if (board.isFull())
+        {
+            gameOver = true;
+            winner = nullptr; // Draw
+            return true;
+        }
         return false;
     }
 
     // Displays the game outcome message.
     void displayResult() const
     {
-        // TODO: Implement result display
+        if (winner)
+        {
+            std::cout << winner->getName() << " (" << winner->getSymbol() << ") wins!\n";
+        }
+        else
+        {
+            std::cout << "It's a draw!\n";
+        }
     }
 
     // Prepares the game for a new round.
     void reset()
     {
-        // TODO: Implement game reset logic
+        board.reset();
+        currentPlayer = player1;
+        gameOver = false;
+        winner = nullptr;
     }
 };
 
