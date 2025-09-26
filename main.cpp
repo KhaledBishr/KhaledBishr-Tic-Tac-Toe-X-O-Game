@@ -120,6 +120,7 @@ public:
             }
         }
     }
+
     int getSize() const
     {
         return size;
@@ -140,8 +141,6 @@ public:
                                                    symbol(symbol)
     {
     }
-
-    // TODO: Implement Player constructor
 
 
     // Pure virtual function to get a move. To be implemented by derived classes.
@@ -187,27 +186,51 @@ public:
 // Implements the computer opponent.
 class AIPlayer : public Player
 {
-public:
+private:
+    Board* board;
     enum Difficulty { EASY, HARD };
 
+public:
     Difficulty difficulty;
 
     // Constructor for the AIPlayer class.
-    AIPlayer(const std::string& name, char symbol, Difficulty difficulty) : Player(name, symbol)
+    AIPlayer(const std::string& name, char symbol, Difficulty difficulty, Board* board)
+        : Player(name, symbol), difficulty(difficulty), board(board)
     {
-        // TODO: Implement AIPlayer constructor
     }
 
     // Determines the AI's move based on the difficulty level.
     void getMove(int& row, int& col) override
     {
-        // TODO: Implement getMove logic based on difficulty
+        Board board;
+        if (difficulty == EASY)
+        {
+            getRandomMove(board, row, col);
+        }
+        else
+        {
+            getBestMove(board, row, col);
+        }
     }
 
     // Finds a random valid move for easy difficulty.
     void getRandomMove(const Board& board, int& row, int& col) const
     {
-        // TODO: Implement random move selection
+        int boardSize = board.getSize();
+
+        if (board.isFull())
+        {
+            row = -1; // Indicate no move is possible
+            col = -1;
+            return;
+        }
+        row = rand() % boardSize;
+        col = rand() % boardSize;
+        while (!board.isValidMove(row, col))
+        {
+            row = rand() % boardSize;
+            col = rand() % boardSize;
+        }
     }
 
     // Finds the optimal move using the Minimax algorithm.
@@ -237,13 +260,11 @@ public:
         }
         row = row;
         col = col;
-        // TODO: Implement Minimax algorithm to find the best move
     }
 
     // Evaluates the board state for scoring (+10, 0, -10).
     int evaluateBoard(const Board& board) const
     {
-        // TODO: Implement evaluation function
         if (board.checkWin(symbol)) return +10;
         if (board.checkWin((symbol == 'X') ? 'O' : 'X')) return -10;
         return 0;
