@@ -5,7 +5,6 @@
 #include <ctime>
 #include <bits/locale_facets_nonio.h>
 
-
 // --- Board Class ---
 // Manages the game board state and validates moves.
 class Board
@@ -18,27 +17,46 @@ public:
     // Initializes an empty grid of the given size.
     Board()
     {
-        // TODO: Implement Board constructor
+        grid = std::vector<std::vector<char>>(size, std::vector<char>(size, ' '));
     }
 
     // Displays the current state of the board to the console.
     void display() const
     {
-        // TODO: Implement board display logic
+        std::cout << "\n";
+        for (int i = 0; i < size; ++i)
+        {
+            std::cout << " ";
+            for (int j = 0; j < size; ++j)
+            {
+                std::cout << (grid[i][j] == ' ' ? ' ' : grid[i][j]);
+                if (j < size - 1)
+                    std::cout << " | ";
+            }
+            std::cout << "\n";
+            if (i < size - 1)
+            {
+                std::cout << "---+---+---\n";
+            }
+        }
+        std::cout << "\n";
     }
 
     // Places a symbol if the move is valid. Returns true on success.
     bool makeMove(int row, int col, char symbol)
     {
-        // TODO: Implement move logic and validation
-        return false;
+        if (!isValidMove(row, col))
+            return false;
+        grid[row][col] = symbol;
+        return true;
     }
 
     // Checks if the specified coordinates are within bounds and the cell is empty.
     bool isValidMove(int row, int col) const
     {
-        // TODO: Implement move validity check
-        return false;
+        if (row < 0 || row >= size || col < 0 || col >= size)
+            return false;
+        return grid[row][col] == ' ';
     }
 
     // Checks all win conditions (rows, columns, diagonals) for a given symbol.
@@ -137,14 +155,13 @@ protected:
 
 public:
     // Constructor for the Player class.
-    Player(const std::string& name, char symbol) : name(name),
+    Player(const std::string &name, char symbol) : name(name),
                                                    symbol(symbol)
     {
     }
 
-
     // Pure virtual function to get a move. To be implemented by derived classes.
-    virtual void getMove(int& row, int& col) = 0;
+    virtual void getMove(int &row, int &col) = 0;
 
     // Returns the player's name.
     std::string getName() const
@@ -159,7 +176,7 @@ public:
     }
 
     // Sets a new name for the player.
-    void setName(const std::string& newName)
+    void setName(const std::string &newName)
     {
         name = newName;
     }
@@ -170,37 +187,40 @@ public:
 class HumanPlayer : public Player
 {
 public:
-    HumanPlayer(const std::string& name, char symbol) : Player(name, symbol)
+    HumanPlayer(const std::string &name, char symbol) : Player(name, symbol)
     {
         // TODO: Implement HumanPlayer constructor
     }
 
-    void getMove(int& row, int& col) override
+    void getMove(int &row, int &col) override
     {
         // TODO: Implement human player move input
     }
 };
-
 
 // --- AIPlayer Class ---
 // Implements the computer opponent.
 class AIPlayer : public Player
 {
 private:
-    Board* board;
-    enum Difficulty { EASY, HARD };
+    Board *board;
+    enum Difficulty
+    {
+        EASY,
+        HARD
+    };
 
 public:
     Difficulty difficulty;
 
     // Constructor for the AIPlayer class.
-    AIPlayer(const std::string& name, char symbol, Difficulty difficulty, Board* board)
+    AIPlayer(const std::string &name, char symbol, Difficulty difficulty, Board *board)
         : Player(name, symbol), difficulty(difficulty), board(board)
     {
     }
 
     // Determines the AI's move based on the difficulty level.
-    void getMove(int& row, int& col) override
+    void getMove(int &row, int &col) override
     {
         Board board;
         if (difficulty == EASY)
@@ -214,7 +234,7 @@ public:
     }
 
     // Finds a random valid move for easy difficulty.
-    void getRandomMove(const Board& board, int& row, int& col) const
+    void getRandomMove(const Board &board, int &row, int &col) const
     {
         int boardSize = board.getSize();
 
@@ -234,7 +254,7 @@ public:
     }
 
     // Finds the optimal move using the Minimax algorithm.
-    void getBestMove(Board& board, int& row, int& col) const
+    void getBestMove(Board &board, int &row, int &col) const
     {
         int bestScore = -1000;
         row = -1;
@@ -263,10 +283,12 @@ public:
     }
 
     // Evaluates the board state for scoring (+10, 0, -10).
-    int evaluateBoard(const Board& board) const
+    int evaluateBoard(const Board &board) const
     {
-        if (board.checkWin(symbol)) return +10;
-        if (board.checkWin((symbol == 'X') ? 'O' : 'X')) return -10;
+        if (board.checkWin(symbol))
+            return +10;
+        if (board.checkWin((symbol == 'X') ? 'O' : 'X'))
+            return -10;
         return 0;
     }
 
@@ -283,9 +305,9 @@ class Game
 {
 private:
     Board board;
-    Player* player1;
-    Player* player2;
-    Player* currentPlayer;
+    Player *player1;
+    Player *player2;
+    Player *currentPlayer;
 
 public:
     // Constructor for the Game class.
@@ -325,13 +347,13 @@ public:
     }
 
     // Handles human player input and move validation.
-    void handleHumanMove(Player* player)
+    void handleHumanMove(Player *player)
     {
         // TODO: Implement human move handling
     }
 
     // Handles AI player move calculation and placement.
-    void handleAIMove(AIPlayer* aiPlayer)
+    void handleAIMove(AIPlayer *aiPlayer)
     {
         // TODO: Implement AI move handling
     }
@@ -360,7 +382,7 @@ public:
 // The entry point of the program.
 int main()
 {
-    Game ticTacToeGame; // Create an instance of the Game class
+    Game ticTacToeGame;    // Create an instance of the Game class
     ticTacToeGame.start(); // Call the start() method to begin the game
 
     return 0;
