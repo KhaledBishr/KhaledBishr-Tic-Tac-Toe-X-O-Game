@@ -112,7 +112,17 @@ public:
     // Clears all cells to an empty state for a new game.
     void reset()
     {
-        // TODO: Implement board reset logic
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                grid[i][j] = ' ';
+            }
+        }
+    }
+    int getSize() const
+    {
+        return size;
     }
 };
 
