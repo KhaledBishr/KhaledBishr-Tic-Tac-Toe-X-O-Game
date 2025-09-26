@@ -60,8 +60,12 @@ public:
     }
 
     // Checks all win conditions (rows, columns, diagonals) for a given symbol.
+    // Checks all win conditions (rows, columns, diagonals) for a given symbol.
     bool checkWin(char symbol) const
     {
+        const int size = 3;
+
+        // Check Rows and Columns (Correctly implemented in original code)
         for (int i = 0; i < size; i++)
         {
             bool roWin = true;
@@ -76,22 +80,25 @@ public:
             if (roWin || colWin)
                 return true;
         }
-        bool diagonalWin = true;
+
+        // Check Main Diagonal (Top-Left to Bottom-Right)
+        bool mainDiagonalWin = true;
         for (int i = 0; i < size; i++)
         {
-            if (grid[i][size - 1 - i] != symbol)
+            if (grid[i][i] != symbol) // FIX: Must check grid[i][i] for the main diagonal
             {
-                diagonalWin = false;
+                mainDiagonalWin = false;
                 break;
             }
         }
-        if (diagonalWin)
+        if (mainDiagonalWin)
             return true;
 
+        // Check Anti-Diagonal (Top-Right to Bottom-Left)
         bool antiDiagonalWin = true;
         for (int i = 0; i < size; i++)
         {
-            if (grid[i][size - 1 - i] != symbol)
+            if (grid[i][size - 1 - i] != symbol) // This is correct for the anti-diagonal
             {
                 antiDiagonalWin = false;
                 break;
@@ -124,7 +131,7 @@ public:
         if (row >= 0 && row < size && col >= 0 && col < size)
             return grid[row][col];
 
-        return '';
+        return ' ';
     }
 
     // Clears all cells to an empty state for a new game.
@@ -155,13 +162,13 @@ protected:
 
 public:
     // Constructor for the Player class.
-    Player(const std::string &name, char symbol) : name(name),
+    Player(const std::string& name, char symbol) : name(name),
                                                    symbol(symbol)
     {
     }
 
     // Pure virtual function to get a move. To be implemented by derived classes.
-    virtual void getMove(int &row, int &col) = 0;
+    virtual void getMove(int& row, int& col) = 0;
 
     // Returns the player's name.
     std::string getName() const
@@ -176,7 +183,7 @@ public:
     }
 
     // Sets a new name for the player.
-    void setName(const std::string &newName)
+    void setName(const std::string& newName)
     {
         name = newName;
     }
@@ -187,14 +194,18 @@ public:
 class HumanPlayer : public Player
 {
 public:
-    HumanPlayer(const std::string &name, char symbol) : Player(name, symbol)
+    HumanPlayer(const std::string& name, char symbol) : Player(name, symbol)
     {
-        // TODO: Implement HumanPlayer constructor
     }
 
-    void getMove(int &row, int &col) override
+    void getMove(int& row, int& col) override
     {
-        // TODO: Implement human player move input
+        std::cout << name << " (" << symbol << "), enter your move (row and column 1-3): ";
+        std::cin >> row >> col;
+
+        // Convert to 0-based indexing
+        row--;
+        col--;
     }
 };
 
@@ -203,38 +214,40 @@ public:
 class AIPlayer : public Player
 {
 private:
-    Board *board;
+    Board* board;
+
+public:
     enum Difficulty
     {
         EASY,
         HARD
     };
 
-public:
     Difficulty difficulty;
 
     // Constructor for the AIPlayer class.
-    AIPlayer(const std::string &name, char symbol, Difficulty difficulty, Board *board)
+    AIPlayer(const std::string& name, char symbol, Difficulty difficulty, Board* board)
         : Player(name, symbol), difficulty(difficulty), board(board)
     {
     }
 
     // Determines the AI's move based on the difficulty level.
-    void getMove(int &row, int &col) override
+    // Determines the AI's move based on the difficulty level.
+    void getMove(int& row, int& col) override
     {
-        Board board;
+        // FIX: Remove 'Board board;' and use '*this->board' to access the actual game board.
         if (difficulty == EASY)
         {
-            getRandomMove(board, row, col);
+            getRandomMove(*this->board, row, col); // Pass the actual board state
         }
         else
         {
-            getBestMove(board, row, col);
+            getBestMove(*this->board, row, col);   // Pass the actual board state
         }
     }
 
     // Finds a random valid move for easy difficulty.
-    void getRandomMove(const Board &board, int &row, int &col) const
+    void getRandomMove(const Board& board, int& row, int& col) const
     {
         int boardSize = board.getSize();
 
@@ -253,22 +266,73 @@ public:
         }
     }
 
+    int minimax(Board board, int depth, bool isMaximizing) const
+    {
+        int score = evaluateBoard(board);
+        if (score == 10 || score == -10)
+            return score;
+        if (board.isFull())
+            return 0;
+
+        if (isMaximizing)
+        {
+            int best = -1000;
+            for (int i = 0; i < board.getSize(); i++)
+            {
+                for (int j = 0; j < board.getSize(); j++)
+                {
+                    if (board.isValidMove(i, j))
+                    {
+                        board.makeMove(i, j, symbol);
+                        best = std::max(best, minimax(board, depth + 1, false));
+                        // REMOVE: board.makeMove(i, j, ' '); // undo is not needed for pass-by-value
+                    }
+                }
+            }
+            return best;
+        }
+        else
+        {
+            int best = 1000;
+            char opponent = (symbol == 'X') ? 'O' : 'X';
+            for (int i = 0; i < board.getSize(); i++)
+            {
+                for (int j = 0; j < board.getSize(); j++)
+                {
+                    if (board.isValidMove(i, j))
+                    {
+                        board.makeMove(i, j, opponent);
+                        best = std::min(best, minimax(board, depth + 1, true));
+                        // REMOVE: board.makeMove(i, j, ' '); // undo is not needed for pass-by-value
+                    }
+                }
+            }
+            return best;
+        }
+    }
     // Finds the optimal move using the Minimax algorithm.
-    void getBestMove(Board &board, int &row, int &col) const
+    void getBestMove(Board& board, int& row, int& col) const
     {
         int bestScore = -1000;
         row = -1;
         col = -1;
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < board.getSize(); i++) // FIX: Use board.getSize() for loops
         {
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < board.getSize(); j++) // FIX: Use board.getSize() for loops
             {
                 if (board.isValidMove(i, j))
                 {
-                    Board test = board;
-                    // int score = minimax(board,0,false);
-                    test.makeMove(i, j, this->symbol);
-                    int score = minimax(test, 0, false);
+                    // Create a temporary copy of the board state for the Minimax calculation
+                    Board tempBoard = board;
+
+                    // Make the move on the temporary board
+                    tempBoard.makeMove(i, j, this->symbol);
+
+                    // Call minimax with the copied board (which is passed by value)
+                    int score = minimax(tempBoard, 0, false);
+
+                    // The 'tempBoard' is destroyed at the end of the loop, so no undo is needed here.
+
                     if (score > bestScore)
                     {
                         bestScore = score;
@@ -278,12 +342,9 @@ public:
                 }
             }
         }
-        row = row;
-        col = col;
     }
-
     // Evaluates the board state for scoring (+10, 0, -10).
-    int evaluateBoard(const Board &board) const
+    int evaluateBoard(const Board& board) const
     {
         if (board.checkWin(symbol))
             return +10;
@@ -305,23 +366,60 @@ class Game
 {
 private:
     Board board;
-    Player *player1;
-    Player *player2;
-    Player *currentPlayer;
+    Player* player1;
+    Player* player2;
+    Player* currentPlayer;
     bool gameOver = false;
-    Player *winner = nullptr;
+    Player* winner = nullptr;
 
 public:
-    // Constructor for the Game class.
-    Game()
+    Game() : player1(nullptr), player2(nullptr), currentPlayer(nullptr), gameOver(false) {}
+
+    // Destructor to clean up allocated players
+    ~Game()
     {
-        // TODO: Implement Game constructor
+        delete player1;
+        delete player2;
     }
 
     // Main game entry point.
     void start()
     {
-        // TODO: Implement main game loop and menu
+        srand(static_cast<unsigned>(time(0)));
+
+        int choice;
+        showMenu();
+        std::cin >> choice;
+
+        if (choice == 1)
+            setupPvP();
+        else if (choice == 2)
+            setupPvC(AIPlayer::EASY);
+        else
+            setupPvC(AIPlayer::HARD);
+
+        board.display();
+
+        while (!gameOver)
+        {
+            if (dynamic_cast<HumanPlayer*>(currentPlayer))
+            {
+                handleHumanMove(currentPlayer);
+            }
+            else
+            {
+                handleAIMove(dynamic_cast<AIPlayer*>(currentPlayer));
+            }
+
+            board.display();
+
+            if (checkGameEnd())
+                break;
+
+            switchPlayer();
+        }
+
+        displayResult();
     }
 
     // Displays the game mode selection menu.
@@ -337,31 +435,58 @@ public:
     // Sets up Player vs Player mode.
     void setupPvP()
     {
-        // TODO: Implement PvP setup
+        std::string name1, name2;
+        std::cout << "Enter name for Player 1 (X): ";
+        std::cin >> name1;
+        std::cout << "Enter name for Player 2 (O): ";
+        std::cin >> name2;
+
+        player1 = new HumanPlayer(name1, 'X');
+        player2 = new HumanPlayer(name2, 'O');
+        currentPlayer = player1;
     }
 
     // Sets up Player vs Computer mode.
     void setupPvC(AIPlayer::Difficulty difficulty)
     {
-        // TODO: Implement PvC setup
+        std::string name;
+        std::cout << "Enter your name (X): ";
+        std::cin >> name;
+
+        player1 = new HumanPlayer(name, 'X');
+        player2 = new AIPlayer("Computer", 'O', difficulty, &board);
+        currentPlayer = player1;
     }
 
     // Alternates the current player.
     void switchPlayer()
     {
-        // TODO: Implement player switch logic
+        currentPlayer = (currentPlayer == player1) ? player2 : player1;
     }
 
     // Handles human player input and move validation.
-    void handleHumanMove(Player *player)
+    void handleHumanMove(Player* player)
     {
-        // TODO: Implement human move handling
+        int row, col;
+        player->getMove(row, col);
+        while (!board.isValidMove(row, col))
+        {
+            std::cout << "Invalid move, try again.\n";
+            player->getMove(row, col);
+        }
+        board.makeMove(row, col, player->getSymbol());
     }
 
     // Handles AI player move calculation and placement.
-    void handleAIMove(AIPlayer *aiPlayer)
+    void handleAIMove(AIPlayer* aiPlayer)
     {
-        // TODO: Implement AI move handling
+        int row, col;
+        aiPlayer->getMove(row, col);
+        if (row != -1 && col != -1)
+        {
+            board.makeMove(row, col, aiPlayer->getSymbol());
+            std::cout << aiPlayer->getName() << " chose (" << row+1 << "," << col+1 << ")\n";
+        }
     }
 
     // Checks for a win or draw condition.
@@ -409,7 +534,7 @@ public:
 // The entry point of the program.
 int main()
 {
-    Game ticTacToeGame;    // Create an instance of the Game class
+    Game ticTacToeGame; // Create an instance of the Game class
     ticTacToeGame.start(); // Call the start() method to begin the game
 
     return 0;
